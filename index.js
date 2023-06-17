@@ -47,6 +47,14 @@ app.get('/students', (req, res) => {
     res.send(students);
 })
 
+app.get('/students/:id', (req, res) => {
+    var id = req.params.id;
+    var student = students.find(function (st) {
+        return st.id === id;
+    });
+    res.send(student);
+})
+
 app.post('/students', (req, res) => {
     students.push(req.body);
     res.send('OK');

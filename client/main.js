@@ -4,7 +4,6 @@ var createBtn = $('#create');
 var updateBtn = $("#update");
 var stName = $('input[name="name"]');
 var address = $('input[name="address"]');
-var students = [];
 
 function generateUuid() {
     return 'xxxx-xxxx-xxx-xxxx'.replace(/[x]/g, function (c) {
@@ -28,7 +27,7 @@ function renderStudent(student) {
 }
 
 async function getData() {
-    students = await axios.get(studentsApi);
+    var students = await axios.get(studentsApi);
     students = students.data;
 
     var ulElement = $('#list-students');
@@ -58,15 +57,13 @@ createBtn.click(async function () {
             address: address.val()
         }
 
-        var result = await axios({
+        await axios({
             method: "POST",
             url: studentsApi,
-            data: JSON.stringify(newSt),
+            data: newSt,
             headers: { "Content-Type": "application/json" },
         })
 
-        result = result.data;
-        students.push(newSt);
         var ulElement = $('#list-students');
         ulElement.html(ulElement.html() + renderStudent(newSt));
         stName.val('');
@@ -110,9 +107,8 @@ var idEd;
 async function onUpdate(id) {
     idEd = id;
     // tìm sinh viên muốn sửa
-    var student = students.find(function (st) {
-        return st.id === idEd;
-    })
+    var student = await axios.get(studentsApi + '/' + id);
+    student = student.data;
 
     stName.val(student.name);
     address.val(student.address);
@@ -126,19 +122,13 @@ updateBtn.click(async function () {
         name: stName.val(),
         address: address.val()
     }
-    var result = await axios({
+    await axios({
         method: "PUT",
         url: studentsApi + "/" + idEd,
-        data: JSON.stringify(edStudent),
+        data: edStudent,
         headers: { "Content-Type": "application/json" },
     })
 
-    result = result.data;
-
-    var idx = students.findIndex(function (student) {
-        return student.id === idEd;
-    })
-    students.splice(idx, 1, edStudent);
     var htmls = renderStudent(edStudent);
     var studentElement = $('.student-' + idEd);
     if (studentElement) {
@@ -158,10 +148,6 @@ async function onDelete(id) {
             url: studentsApi + '/' + id,
             headers: { "Content-Type": "application/json" }
         })
-        var idx = students.findIndex(function (student) {
-            return student.id === id;
-        })
-        students.splice(idx, 1);
         var studentElement = $('.student-' + id);
         if (studentElement) {
             studentElement.remove();
