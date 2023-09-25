@@ -1,10 +1,5 @@
 const studentsApi = "http://localhost:3000/students";
 
-var createBtn = $('#create');
-var updateBtn = $("#update");
-var stName = $('input[name="name"]');
-var address = $('input[name="address"]');
-
 function generateUuid() {
     return 'xxxx-xxxx-xxx-xxxx'.replace(/[x]/g, function (c) {
         var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -12,42 +7,37 @@ function generateUuid() {
     });
 }
 
-/**
- * Render ra từng sinh viên
- * @param {*} student 
- * @returns 
- */
-function renderStudent(student) {
-    return `<li class='student-${student.id}'>
-                <h2>Name: ${student.name}</h2>
-                <p>Address: ${student.address}</p>
-                <button onclick="onUpdate('${student.id}')">Sửa</button>
-                <button onclick="onDelete('${student.id}')">Xóa</button>
-            </li>`
-}
-
-async function getData() {
+async function displaySinhVien() {
     var students = await axios.get(studentsApi);
     students = students.data;
 
     var ulElement = $('#list-students');
 
-    var htmls = '';
-    for (const student of students) {
-        htmls += renderStudent(student);
-    }
-    ulElement.html(htmls);
-}
+    var htmls = students.map(function (student) {
+        return `<li>
+            <h2>Name: ${student.name}</h2>
+            <p>Address: ${student.address}</p>
+            <button onclick="onUpdate('${student.id}')">Sửa</button>
+            <button onclick="onDelete('${student.id}')">Xóa</button>
+        </li>`
+    });
 
-getData();
+    ulElement.html(htmls.join(''));
+}
+displaySinhVien();
+
+var createBtn = $('#create');
+var updateBtn = $("#update");
+var stName = $('input[name="name"]');
+var address = $('input[name="address"]');
 
 // Xử lý khi kích vào button Thêm
 createBtn.click(async function () {
     var check = true;
-    if (validation(stName)) {
+    if (isRequired(stName)) {
         check = false;
     }
-    if (validation(address)) {
+    if (isRequired(address)) {
         check = false;
     }
     if (check) {
@@ -60,29 +50,25 @@ createBtn.click(async function () {
         await axios({
             method: "POST",
             url: studentsApi,
-            data: newSt,
-            headers: { "Content-Type": "application/json" },
+            data: newSt
         })
 
-        var ulElement = $('#list-students');
-        ulElement.html(ulElement.html() + renderStudent(newSt));
+        displaySinhVien();
         stName.val('');
         address.val('');
     }
 
-    function validation(input) {
+    function isRequired(input) {
         var errorElement = input.parent().children()[3];
-        if (input.val() === '') {
+        if (input.val().trim() === '') {
             Object.assign(errorElement.style, {
                 display: 'block',
                 color: 'red',
                 fontStyle: 'italic'
             })
             $(errorElement).text('Yêu cầu nhập!');
+            input.addClass('invalid');
             return true;
-        } else {
-            $(errorElement).attr('style', 'display: none;');
-            return false;
         }
     }
 })
@@ -90,12 +76,16 @@ createBtn.click(async function () {
 function handleBlurInput(input) {
     var errorElement = input.parent().children()[3];
     input.blur(function () {
-        if (input.val() === '') {
+        if (input.val().trim() === '') {
             $(errorElement).attr('style', 'display: block; color: red; font-style: italic;');
             $(errorElement).text('Yêu cầu nhập!');
-        } else {
-            $(errorElement).attr('style', 'display: none;');
+            input.addClass('invalid');
         }
+    })
+
+    input.on('input', function () {
+        $(errorElement).attr('style', 'display: none;');
+        input.removeClass('invalid');
     })
 }
 
@@ -106,8 +96,11 @@ var idEd;
 // Xử lý khi kích vào button Sửa
 async function onUpdate(id) {
     idEd = id;
-    // tìm sinh viên muốn sửa
-    var student = await axios.get(studentsApi + '/' + id);
+    // lấy sinh viên muốn sửa
+    var student = await axios({
+        method: "GET",
+        url: studentsApi + "/" + id
+    });
     student = student.data;
 
     stName.val(student.name);
@@ -117,23 +110,19 @@ async function onUpdate(id) {
 }
 
 updateBtn.click(async function () {
-    var edStudent = {
+    var student = {
         id: idEd,
         name: stName.val(),
         address: address.val()
     }
+
     await axios({
         method: "PUT",
         url: studentsApi + "/" + idEd,
-        data: edStudent,
-        headers: { "Content-Type": "application/json" },
+        data: student
     })
 
-    var htmls = renderStudent(edStudent);
-    var studentElement = $('.student-' + idEd);
-    if (studentElement) {
-        studentElement.replaceWith(htmls);
-    }
+    displaySinhVien();
     stName.val('');
     address.val('');
     $(updateBtn).attr('style', 'display: none;');
@@ -145,12 +134,9 @@ async function onDelete(id) {
     if (confirm("Bạn có chắc muốn xóa?")) {
         await axios({
             method: "DELETE",
-            url: studentsApi + '/' + id,
-            headers: { "Content-Type": "application/json" }
+            url: studentsApi + '/' + id
         })
-        var studentElement = $('.student-' + id);
-        if (studentElement) {
-            studentElement.remove();
-        }
+
+        displaySinhVien();
     }
 }
