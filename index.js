@@ -43,11 +43,11 @@ const students = [
     }
 ]
 
-app.get('/students', (req, res) => {
+app.get('/student', (req, res) => {
     res.send(students);
 })
 
-app.get('/students/:id', (req, res) => {
+app.get('/student/:id', (req, res) => {
     var id = req.params.id;
     var student = students.find(function (st) {
         return st.id === id;
@@ -55,12 +55,12 @@ app.get('/students/:id', (req, res) => {
     res.send(student);
 })
 
-app.post('/students', (req, res) => {
+app.post('/student', (req, res) => {
     students.push(req.body);
     res.send('OK');
 })
 
-app.put('/students/:id', (req, res) => {
+app.put('/student/:id', (req, res) => {
     var id = req.params.id;
     var idx = students.findIndex(function (st) {
         return st.id === id;
@@ -69,7 +69,7 @@ app.put('/students/:id', (req, res) => {
     res.send('OK');
 })
 
-app.delete('/students/:id', (req, res) => {
+app.delete('/student/:id', (req, res) => {
     var id = req.params.id;
     var idx = students.findIndex(function (st) {
         return st.id === id;

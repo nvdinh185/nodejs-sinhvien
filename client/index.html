@@ -15,21 +15,24 @@
 </head>
 
 <body>
-    <div>
-        <label>Tên</label>
-        <input type="text" name="name"><br />
-        <span class="form-message"></span>
-    </div>
-    <br />
-    <div>
-        <label>Địa chỉ</label>
-        <input type="text" name="address"><br />
-        <span class="form-message"></span>
-    </div>
-    <div>
-        <button id="create">Thêm</button>
-        <button style="display: none;" id="update">Sửa</button>
-    </div>
+    <form>
+        <div>
+            <label>Tên</label>
+            <input type="text" name="name"><br />
+            <span class="form-message"></span>
+        </div>
+        <br />
+        <div>
+            <label>Địa chỉ</label>
+            <input type="text" name="address"><br />
+            <span class="form-message"></span>
+        </div>
+        <div>
+            <button id="create">Thêm</button>
+            <button style="display: none;" id="update">Sửa</button>
+        </div>
+    </form>
+    <div class="error"></div>
 
     <ul id="list-students"></ul>
     <script src="lib/axios.min.js"></script>
